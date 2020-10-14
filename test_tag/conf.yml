@@ -1,0 +1,43 @@
+link:
+ url: http://10.4.68.222/manager/tags/link
+ body_key: 
+  - TagUserModule
+  - TagUserType
+  - TagUserID
+  - TagID
+  - callBackURI
+  - getUserURI
+ body_value: 
+  - [dataInput, TCP, 83a2b994-f6b8-11ea-ba49-0291b1811a92, 5, /etl/input/tag, /etl/input]
+  - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+  - [~, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+ response:
+  - [200]
+  - [200]
+  - [202, 3761504262, 请求体数据不正确]
+
+tag:
+ url: http://10.4.68.222/manager/tags/tag
+ body_key:
+  - id
+  - name
+  - groupID
+ body_value1: []
+ body_value2: []
+ body_value3: []
+group:
+ url: http://10.4.68.222/manager/tags/group
+ body_key:
+  - id
+  - name
+ body_value1: []
+ body_value2: []
+ body_value3: []
+method: [POST, DELETE, PUT, GET]
+response:
+ green:
+  status_code: 200
+  res_data:
+ red:
+  status_code: 202
+  res_data: []
