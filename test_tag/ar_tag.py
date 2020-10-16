@@ -31,31 +31,39 @@ def extract_conf(resource):
     conf = load_config()
     if resource == 'link':
         return conf['link']
+    elif resource == 'tag':
+        return conf['tag']
+    else:
+        return conf['link']
 
-def send_post_link():
-    link = extract_conf('link')
-    link_url = link['url']
-    body_key, body_values = link['body_key'], link['body_value']
+def send_post(resource):
+    resource = extract_conf(resource)['post']
+    resource_url = link['url']
+    body_key, body_values = resource['body_key'], resource['body_value']
     for v in body_values:
         data = json.dumps(dict(zip(body_key, v)))
         # print(data)
         res = send_request('POST', link_url, data)
         yield res
 
-def combine():
-    res = send_post_link()
-    expected_res = extract_conf('link')['response']
+def combine(resource, method):
+    res = send_post(resource)
+    expected_res = extract_conf(resource)[method]['response']
     return zip(res, expected_res)
 
 
 @pytest.mark.parametrize("a, expected", combine())
-def test_send_post_link(a, expected):
+def test_send_post(a, expected):
     assert a.status_code == expected[0]
     text = json.loads(a.text)
     if "code" in text:
         assert text['code'] == expected[1]
     if 'message' in text:
         assert text['message'] == expected[2]
+
+
+def test_send_post_tag():
+
 
 
         
