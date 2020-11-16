@@ -1,43 +1,121 @@
 link:
- url: http://10.4.68.222/manager/tags/link
- body_key: 
-  - TagUserModule
-  - TagUserType
-  - TagUserID
-  - TagID
-  - callBackURI
-  - getUserURI
- body_value: 
-  - [dataInput, TCP, 83a2b994-f6b8-11ea-ba49-0291b1811a92, 5, /etl/input/tag, /etl/input]
-  - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
-  - [~, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+ POST:
+  url: http://10.4.68.222/manager/tags/link
+  body:
+   legal_keys: [TagUserModule, TagUserType, TagUserID, TagID, callBackURI, getUserURI]
+   # 后台调用的接口能保证不会出现非法参数和非法值
+   illegal_keys: ~
+    # - [tagUSERmodule, TagUserType, TagUserID, TagID, callBackURI, getUserURI]
+    # - [TagUserType, TagUserID, TagID, callBackURI, getUserURI]
+   values:
+    - [dataInput, TCP, 83a2b994-f6b8-11ea-ba49-0291b1811a92, 5, /etl/input/tag, /etl/input]
+    - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+    # - [~, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+  expected_res:
+  - [200, success]
+  - [200, success]
+  # - [202, 3761504262, 请求体数据不正确]
+ GET:
+  base_url: http://10.4.68.222/manager/tags/link
+  query_args: 
+   - ?tagUserModule=dataInput&tagUserType=tcp
+   - ?tagUserModule=&tagUserType=tcp
+  expected_res:
+  - [200, success]
+  - [202, URI不正确]
+ DELETE:
+  url: http://10.4.68.222/manager/tags/link
+  query_args:
+   - ?tagUserModule=dataInput&tagUserType=tcp&tagID=1&tagUserID=83a2b994-f6b8-11ea-ba49-0291b1811a92
+  expeected_res:
+   - [200, success]
   
- response:
-  - [200]
-  - [200]
-  - [202, 3761504262, 请求体数据不正确]
-
 tag:
- post:
+ POST:
   url: http://10.4.68.222/manager/tags/tag
-   # body_key:
-   #   - [name, groupID]
-   #   - [name]
-   #   - [name1]
-   #   - [groupId]
-   # body_value: 
-   #  - [emma, emma]
-   #  - [emma%, 1]
-   #  - [~, 1]
-   body:
-    name: [emma, emma<%^, ~]
-    groupID: [1, 2, 0, ~]
+  body:
+   case1: {name: emma, groupID: 1}
+   case2: {name: emma<%^, groupID: 1}
+   case3: {name: ~, groupID: 1}
+   case4: {name: emma1, groupID: 0}
+   case5: {name: emma2, groupID: ~}
+   case6: {name1: emma, groupID: 1}
+  #  legal_keys: [name, groupID]
+  #  illegal_keys: [name1]
+  #  values:
+  #   - [emma, 1]
+  #   - [emma<%^, 1]
+  #   - [~, 1]
+  #   - [emma1, 0]
+  #   - [emma2, ~]
+  expected_res:
+   - [200, success]
+   - [202, 3761504264, 名字含有非法字符]
+   - [202, 3761504265, ID_NAME_IS_NULL]
+   - [200]
+   - [202, 3761504267, ID_GROUPID_IS_NULL]
+   - [202, 3761504262, 请求体数据不正确]
+ get:
+  base_url: http://10.4.68.222/manager/tags/tag
+  resource_id: 
+   - 1
+   - 0
+  query_args:
+   - ?group=1
+   - ?group=0  # 未分组
+   - ?group=45  # 不存在的组
+   - ?key=a&page=1&size=10&order=id&by=asc
+   - ?page=&size=10
+   - ?page=2
+   - ?page=a&size=b
+   - ?order=id&by=
+   - ?by=asc
+   - ?order=id&by=asd
+  expected_res:
+   - [200, success]
+   - [200, success]
+   - [200, success]
+   - [200, success]
+   - [202, ID_PAGE_SIZE_IS_NULL]
+   - [200, success]  # page 不生效, page 需和 size 同时使用
+   - [202, ID_PAGE_SIZE_IS_NOT_INT]
+   - [202, ID_ORDER_BY_IS_NULL]  # by不生效
+   - [200, success]
+   - [202, ID_METHOD_BY_IS_FALSE]
+ delete:
+  url: http://10.4.68.222/manager/tags/tag
+  resource_id: 
+   - 0 
+   - 1
+   - 100 
+  expected_res:
+   - [202, ID_ID_IS_FALSE]
+   - [200, {success: 1}]
+   - [200, {success: 0}]
+ put:
+  url: http://10.4.68.222/manager/tags/tag
+  resource_id:
+   - 0
+   - 1
+   - 100
+  body: 
+   key: [name, groupID]
+   values:
+    - [emma1, 2]
+    - [emma2]
+    - []
+    - [~]
+    - [MySQL]
+    - [SUSE, 2]
+
 
 group:
- url: http://10.4.68.222/manager/tags/group
- body_key:
-  - id
-  - name
+ POST:
+  url: http://10.4.68.222/manager/tags/group
+  body:
+   legal_keys: []
+   illegal_keys: []
+   values:
  body_value1: []
  body_value2: []
  body_value3: []
