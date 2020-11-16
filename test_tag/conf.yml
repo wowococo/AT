@@ -1,20 +1,35 @@
+# 标签连接，接口请求方法为 post get delete
 link:
  POST:
   url: http://10.4.68.222/manager/tags/link
   body:
-   legal_keys: [TagUserModule, TagUserType, TagUserID, TagID, callBackURI, getUserURI]
+   case1: 
+    TagUserModule: dataInput
+    TagUserType: TCP
+    TagUserID: 83a2b994-f6b8-11ea-ba49-0291b1811a92
+    TagID: 5
+    callBackURI: /etl/input/tag
+    getUserURI: /etl/input
+   case2: 
+    TagUserModule: agentManage
+    TagUserType: hostGroup
+    TagUserID: 9e6c56a6-15f1-11ea-a544-0202ac120007
+    TagID: 5
+    callBackURI: /manager/agents/host/group/tag
+    getUserURI: /manager/agents/host/group/
+  #  legal_keys: [TagUserModule, TagUserType, TagUserID, TagID, callBackURI, getUserURI]
    # 后台调用的接口能保证不会出现非法参数和非法值
-   illegal_keys: ~
+  #  illegal_keys: ~
     # - [tagUSERmodule, TagUserType, TagUserID, TagID, callBackURI, getUserURI]
     # - [TagUserType, TagUserID, TagID, callBackURI, getUserURI]
-   values:
-    - [dataInput, TCP, 83a2b994-f6b8-11ea-ba49-0291b1811a92, 5, /etl/input/tag, /etl/input]
-    - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
+  #  values:
+  #   - [dataInput, TCP, 83a2b994-f6b8-11ea-ba49-0291b1811a92, 5, /etl/input/tag, /etl/input]
+  #   - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
     # - [~, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
   expected_res:
   - [200, success]
   - [200, success]
-  # - [202, 3761504262, 请求体数据不正确]
+  # - [202, 3761504262, 请求体数据不正确]      # 后台调用保证
  GET:
   base_url: http://10.4.68.222/manager/tags/link
   query_args: 
@@ -29,7 +44,9 @@ link:
    - ?tagUserModule=dataInput&tagUserType=tcp&tagID=1&tagUserID=83a2b994-f6b8-11ea-ba49-0291b1811a92
   expeected_res:
    - [200, success]
-  
+
+# ---------------------------------------------------------
+# 标签接口
 tag:
  POST:
   url: http://10.4.68.222/manager/tags/tag
@@ -40,14 +57,7 @@ tag:
    case4: {name: emma1, groupID: 0}
    case5: {name: emma2, groupID: ~}
    case6: {name1: emma, groupID: 1}
-  #  legal_keys: [name, groupID]
-  #  illegal_keys: [name1]
-  #  values:
-  #   - [emma, 1]
-  #   - [emma<%^, 1]
-  #   - [~, 1]
-  #   - [emma1, 0]
-  #   - [emma2, ~]
+   case7: {name: emma, groupID: 1}
   expected_res:
    - [200, success]
    - [202, 3761504264, 名字含有非法字符]
@@ -55,7 +65,8 @@ tag:
    - [200]
    - [202, 3761504267, ID_GROUPID_IS_NULL]
    - [202, 3761504262, 请求体数据不正确]
- get:
+   - [202, 3761504257, 名字已经存在]
+ GET:
   base_url: http://10.4.68.222/manager/tags/tag
   resource_id: 
    - 1
@@ -82,7 +93,7 @@ tag:
    - [202, ID_ORDER_BY_IS_NULL]  # by不生效
    - [200, success]
    - [202, ID_METHOD_BY_IS_FALSE]
- delete:
+ DELETE:
   url: http://10.4.68.222/manager/tags/tag
   resource_id: 
    - 0 
@@ -92,37 +103,62 @@ tag:
    - [202, ID_ID_IS_FALSE]
    - [200, {success: 1}]
    - [200, {success: 0}]
- put:
+ PUT:
   url: http://10.4.68.222/manager/tags/tag
   resource_id:
    - 0
    - 1
    - 100
   body: 
-   key: [name, groupID]
-   values:
-    - [emma1, 2]
-    - [emma2]
-    - []
-    - [~]
-    - [MySQL]
-    - [SUSE, 2]
-
-
+   case1: {name: mary, groupID: 2}
+   case2: {name: mary1}
+   case3: {}
+   case4: {name: ~}
+   case5: {name: MySQL}
+   case6: {name: SUSE, groupID: 2}
+   case7: {name: mary#￥%}
+   case8: {name1: mary2}
+  expected_res:
+   - [200]
+   - [200]
+   - [202, 3761504259, 请求体为空]
+   - [202, 3761504265, ID_NAME_IS_NULL]
+   - [202, 3761504257, 名字已经存在]
+   - [202, 3761504257, 名字已经存在]
+   - [202, 3761504264, 名字含有非法字符]
+   - [202, 3761504262, 请求体数据不正确]
+# ---------------------------------------------------------
+# 标签组接口
 group:
  POST:
   url: http://10.4.68.222/manager/tags/group
   body:
-   legal_keys: []
-   illegal_keys: []
-   values:
- body_value1: []
- body_value2: []
- body_value3: []
-response:
- green:
-  status_code: 200
-  res_data:
- red:
-  status_code: 202
-  res_data: []
+   case1: {name: 邓紫棋}
+   case2: {name: 数据库}
+   case3: {name1: ss}
+   case4: {name: 邓紫棋?%}
+  expected_res:
+   - [200]
+   - [202, 3761504257, 名字已经存在]
+   - [202, 3761504262, 请求体数据不正确]
+   - [202, 3761504264, 名字含有非法字符]
+ PUT:
+  url: http://10.4.68.222/manager/tags/tag
+  resource_id:
+   - 0
+   - 1
+   - 100
+  body: 
+   case1: {name: 林俊杰}
+   case2: {name: 中间件}
+   case3: {name1: mary2}
+   case4: {name: mary#￥%}
+   case5: {name: ~}
+   case6: {}
+  expected_res:
+   - [200]
+   - [202, 3761504257, 名字已经存在]
+   - [202, 3761504262, 请求体数据不正确]
+   - [202, 3761504264, 名字含有非法字符]
+   - [202, 3761504265, ID_NAME_IS_NULL]
+   - [202, 3761504259, 请求体为空]
