@@ -27,8 +27,8 @@ link:
   #   - [agentManage, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
     # - [~, hostGroup, 9e6c56a6-15f1-11ea-a544-0202ac120007, 5, /manager/agents/host/group/tag, /manager/agents/host/group/]
   expected_res:
-  - [200, success]
-  - [200, success]
+  - {case1: [200, success]}
+  - {case2: [200, success]}
   # - [202, 3761504262, 请求体数据不正确]      # 后台调用保证
  GET:
   base_url: http://10.4.68.222/manager/tags/link
@@ -36,14 +36,14 @@ link:
    - ?tagUserModule=dataInput&tagUserType=tcp
    - ?tagUserModule=&tagUserType=tcp
   expected_res:
-  - [200, success]
-  - [202, URI不正确]
+  - {case1: [200, success]}
+  - {[case2: 202, URI不正确]}
  DELETE:
   url: http://10.4.68.222/manager/tags/link
   query_args:
    - ?tagUserModule=dataInput&tagUserType=tcp&tagID=1&tagUserID=83a2b994-f6b8-11ea-ba49-0291b1811a92
   expeected_res:
-   - [200, success]
+   - {case1: [200, success]}
 
 # ---------------------------------------------------------
 # 标签接口
@@ -59,74 +59,81 @@ tag:
    case6: {name1: emma, groupID: 1}
    case7: {name: emma, groupID: 1}
   expected_res:
-   - [200, success]
-   - [202, 3761504264, 名字含有非法字符]
-   - [202, 3761504265, ID_NAME_IS_NULL]
-   - [200]
-   - [202, 3761504267, ID_GROUPID_IS_NULL]
-   - [202, 3761504262, 请求体数据不正确]
-   - [202, 3761504257, 名字已经存在]
- GET:
-  base_url: http://10.4.68.222/manager/tags/tag
-  resource_id: 
-   - 1
-   - 0
-  query_args:
-   - ?group=1
-   - ?group=0  # 未分组
-   - ?group=45  # 不存在的组
-   - ?key=a&page=1&size=10&order=id&by=asc
-   - ?page=&size=10
-   - ?page=2
-   - ?page=a&size=b
-   - ?order=id&by=
-   - ?by=asc
-   - ?order=id&by=asd
-  expected_res:
-   - [200, success]
-   - [200, success]
-   - [200, success]
-   - [200, success]
-   - [202, ID_PAGE_SIZE_IS_NULL]
-   - [200, success]  # page 不生效, page 需和 size 同时使用
-   - [202, ID_PAGE_SIZE_IS_NOT_INT]
-   - [202, ID_ORDER_BY_IS_NULL]  # by不生效
-   - [200, success]
-   - [202, ID_METHOD_BY_IS_FALSE]
- DELETE:
-  url: http://10.4.68.222/manager/tags/tag
-  resource_id: 
-   - 0 
-   - 1
-   - 100 
-  expected_res:
-   - [202, ID_ID_IS_FALSE]
-   - [200, {success: 1}]
-   - [200, {success: 0}]
+   - {case1: [200, success]}
+   - {case2: [202, 3761504264, 名字含有非法字符]}
+   - {case3: [202, 3761504265, ID_NAME_IS_NULL]}
+   - {case4: [200]}
+   - {case5: [202, 3761504267, ID_GROUPID_IS_NULL]}
+   - {case6: [202, 3761504262, 请求体数据不正确]}
+   - {case7: [202, 3761504257, 名字已经存在]}
  PUT:
-  url: http://10.4.68.222/manager/tags/tag
-  resource_id:
-   - 0
-   - 1
-   - 100
+  url:
+   tc1: http://10.4.68.222/manager/tags/tag/0
+   tc2: http://10.4.68.222/manager/tags/tag/1
+   tc3: http://10.4.68.222/manager/tags/tag/100
   body: 
-   case1: {name: mary, groupID: 2}
-   case2: {name: mary1}
-   case3: {}
-   case4: {name: ~}
-   case5: {name: MySQL}
-   case6: {name: SUSE, groupID: 2}
-   case7: {name: mary#￥%}
-   case8: {name1: mary2}
+   tc1:
+    case1: {name: mary, groupID: 2}
+   tc2:
+    case1: {name: mary, groupID: 2}
+    case2: {name: mary1}
+    case3: {}
+    case4: {name: ~}
+    case5: {name: MySQL}
+    case6: {name: SUSE, groupID: 2}
+    case7: {name: 'mary#￥%'}
+    case8: {name1: mary2}
+   tc3:
+    case1: {name: mary, groupID: 2}
   expected_res:
-   - [200]
-   - [200]
-   - [202, 3761504259, 请求体为空]
-   - [202, 3761504265, ID_NAME_IS_NULL]
-   - [202, 3761504257, 名字已经存在]
-   - [202, 3761504257, 名字已经存在]
-   - [202, 3761504264, 名字含有非法字符]
-   - [202, 3761504262, 请求体数据不正确]
+   - {tc1-case1: [202, 3761504258, ID不正确]}
+   - {tc2-case1: [200]}
+   - {tc2-case2: [200]}
+   - {tc2-case3: [202, 3761504259, 请求体为空]}
+   - {tc2-case4: [202, 3761504265, ID_NAME_IS_NULL]}
+   - {tc2-case5: [202, 3761504257, 名字已经存在]}
+   - {tc2-case6: [202, 3761504257, 名字已经存在]}
+   - {tc2-case7: [202, 3761504264, 名字含有非法字符]}
+   - {tc2-case8: [202, 3761504262, 请求体数据不正确]}
+   - {tc3-case1: [202, ]}   # 待确认
+ DELETE:
+  url: 
+   tc1: http://10.4.68.222/manager/tags/tag/0
+   tc2: http://10.4.68.222/manager/tags/tag/1
+   tc3: http://10.4.68.222/manager/tags/tag/100
+  expected_res:
+   - {case1: [202, ID_ID_IS_FALSE]}
+   - {case2: [200, {success: 1}]}
+   - {case3: [200, {success: 0}]}
+ GET:
+  url: 
+   tc1: http://10.4.68.222/manager/tags/tag/3
+   tc2: http://10.4.68.222/manager/tags/tag/120
+   tc3: http://10.4.68.222/manager/tags/tag?group=1
+   tc4: http://10.4.68.222/manager/tags/tag?group=0   # 未分组
+   tc5: http://10.4.68.222/manager/tags/tag?group=45   # 不存在的组
+   tc6: http://10.4.68.222/manager/tags/tag?key=a&page=1&size=10&order=id&by=asc
+   tc7: http://10.4.68.222/manager/tags/tag?page=&size=10
+   tc8: http://10.4.68.222/manager/tags/tag?page=2
+   tc9: http://10.4.68.222/manager/tags/tag?page=a&size=b
+   tc10: http://10.4.68.222/manager/tags/tag?order=id&by=
+   tc11: http://10.4.68.222/manager/tags/tag?by=asc
+   tc12: http://10.4.68.222/manager/tags/tag?order=id&by=asd
+  expected_res:
+   - {case1: [200, success]}
+   - {case2: [200, success]}
+   - {case2: [200, success]}
+   - {case3: [200, success]}
+   - {case4: [200, success]}
+   - {case5: [202, ID_PAGE_SIZE_IS_NULL]}
+   - {case6: [200, success]}  # page 不生效, page 需和 size 同时使用
+   - {case7: [202, ID_PAGE_SIZE_IS_NOT_INT]}
+   - {case8: [202, ID_ORDER_BY_IS_NULL]}  # by不生效
+   - {case9: [200, success]}
+   - {case10: [202, ID_METHOD_BY_IS_FALSE]}
+   - {case11: [202, ID_METHOD_BY_IS_FALSE]}
+   - {case12: [202, ID_METHOD_BY_IS_FALSE]}
+
 # ---------------------------------------------------------
 # 标签组接口
 group:
@@ -138,27 +145,33 @@ group:
    case3: {name1: ss}
    case4: {name: 邓紫棋?%}
   expected_res:
-   - [200]
-   - [202, 3761504257, 名字已经存在]
-   - [202, 3761504262, 请求体数据不正确]
-   - [202, 3761504264, 名字含有非法字符]
+   - {case1: [200]}
+   - {case2: [202, 3761504257, 名字已经存在]}
+   - {case3: [202, 3761504262, 请求体数据不正确]}
+   - {case4: [202, 3761504264, 名字含有非法字符]}
  PUT:
-  url: http://10.4.68.222/manager/tags/tag
-  resource_id:
-   - 0
-   - 1
-   - 100
+  url:
+   tc1: http://10.4.68.222/manager/tags/tag/0
+   tc2: http://10.4.68.222/manager/tags/tag/1
+   tc3: http://10.4.68.222/manager/tags/tag/100
   body: 
-   case1: {name: 林俊杰}
-   case2: {name: 中间件}
-   case3: {name1: mary2}
-   case4: {name: mary#￥%}
-   case5: {name: ~}
-   case6: {}
+   tc1:
+    case1: {name: 林俊杰}
+   tc2:
+    case1: {name: 林俊杰}
+    case2: {name: 中间件}
+    case3: {name1: mary2}
+    case4: {name: mary#￥%}
+    case5: {name: ~}
+    case6: {}
+   tc3:
+    case1: {name: 林俊杰} 
   expected_res:
-   - [200]
-   - [202, 3761504257, 名字已经存在]
-   - [202, 3761504262, 请求体数据不正确]
-   - [202, 3761504264, 名字含有非法字符]
-   - [202, 3761504265, ID_NAME_IS_NULL]
-   - [202, 3761504259, 请求体为空]
+   - {tc1-case1: [202, 3761504258,ID不正确]}
+   - {tc2-case1: [200]}
+   - {tc2-case2: [202, 3761504257, 名字已经存在]}
+   - {tc2-case3: [202, 3761504262, 请求体数据不正确]}
+   - {tc2-case4: [202, 3761504264, 名字含有非法字符]}
+   - {tc2-case5: [202, 3761504265, ID_NAME_IS_NULL]}
+   - {tc2-case6: [202, 3761504259, 请求体为空]}
+   - {tc3-case1: [202, ]}   # 待确认
