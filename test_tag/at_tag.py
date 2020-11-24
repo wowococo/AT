@@ -8,15 +8,15 @@ from collections import namedtuple
 
 Resource = namedtuple('Resource', ['tag', 'link', 'group'])
 src = Resource('tag', 'link', 'group')
-METHOD = {"post": "POST", "put": "PUT", "get": "GET", "delete": "DELETE"}
+POST, PUT, GET, DELETE = 'POST', 'PUT', 'GET', 'DELETE'
 
 
 def send_request(method, url, data=None):
-    if method == METHOD['post']:
+    if method == POST:
         r = requests.post(url, data)
-    elif method == METHOD['put']:
+    elif method == PUT:
         r = requests.put(url, data)
-    elif method == METHOD['get']:
+    elif method == GET:
         r = requests.get(url)
     else:
         r = requests.delete(url)
@@ -40,48 +40,51 @@ def extract_conf(resource):
 
 
 def send_post(resource):
-    resource = extract_conf(resource).get('POST')
+    resource = extract_conf(resource).get(POST)
     if resource:
         url = resource['url']
         body = resource['body']
         for case in body.keys():
             data = json.dumps(body[case])
-            res = send_request('POST', url, data)
+            res = send_request(POST, url, data)
             yield res
 
 
 def send_put(resource):
-    resource = extract_conf(resource).get('PUT')
+    resource = extract_conf(resource).get(PUT)
     if resource:
-        urls = resource('url')
+        url = resource('url')
         body = resource('body')
-        for tc in urls:
-            url = urls[tc]
+        for tc in url:
+            url = url[tc]
             body = body['tc']
             for case in body.keys():
                 data = json.dumps(body[case])
-                res = send_request('PUT', url, data)
+                res = send_request(PUT, url, data)
                 yield res
 
 
 def send_delete(resource):
-    resource = extract_conf(resource).get('DELETE')
+    resource = extract_conf(resource).get(DELETE)
     if resource:
-        urls = resource('url')
-        for case in urls.keys():
-            res = send_request('DELETE', url=urls[case])
+        url = resource('url')
+        for case in url.keys():
+            res = send_request(DELETE, url=url[case])
             yield res
 
 
 def send_get(resource):
-    pass
+    resource = extract_conf(resource).get(GET)
+    if resource:
+        url = resource('url')
+        for case in url.keys():
+            res = send_request(GET, url=url[case])
+            yield res
 
 
 def combine(resource, method):
-    str = f"send_{method.lower()}({resource})"
-    print('ee', str)
+    str = f"send_{method.lower()}('{resource}')"
     res = eval(str)
-    # res = eval('send_post(resource)')
     expected_res = extract_conf(resource).get(method).get('expected_res')
     expected_res = expected_res.values()
     return zip(res, expected_res)
@@ -91,25 +94,25 @@ def combine(resource, method):
 # test link
 # ----------------------------------------------------
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('link', 'POST'))
+    lambda resource, method: combine(resource, method))(src.link, POST))
 def test_send_post_link(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('link', 'PUT'))
+    lambda resource, method: combine(resource, method))(src.link, PUT))
 def test_send_put_link(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('link', 'DELETE'))
+    lambda resource, method: combine(resource, method))(src.link, DELETE))
 def test_send_delete_link(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('link', 'GET'))
+    lambda resource, method: combine(resource, method))(src.link, GET))
 def test_send_get_link(a, expected):
     start_assert(a, expected)
 
@@ -118,24 +121,25 @@ def test_send_get_link(a, expected):
 # test tag
 # -----------------------------------------------------
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('tag', 'POST'))
+    lambda resource, method: combine(resource, method))(src.tag, POST))
 def test_send_post_tag(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('tag', 'PUT'))
+    lambda resource, method: combine(resource, method))(src.tag, PUT))
 def test_send_put_tag(a, expected):
     start_assert(a, expected)
 
+
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('tag', 'DELETE'))
+    lambda resource, method: combine(resource, method))(src.tag, DELETE))
 def test_send_delete_tag(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('tag', 'GET'))
+    lambda resource, method: combine(resource, method))(src.tag, GET))
 def test_send_get_tag(a, expected):
     start_assert(a, expected)
 
@@ -144,25 +148,25 @@ def test_send_get_tag(a, expected):
 # test taggroup
 # -----------------------------------------------------
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('group', 'POST'))
+    lambda resource, method: combine(resource, method))(src.group, POST))
 def test_send_post_group(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('group', 'PUT'))
+    lambda resource, method: combine(resource, method))(src.group, PUT))
 def test_send_put_group(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('group', 'DELETE'))
+    lambda resource, method: combine(resource, method))(src.group, DELETE))
 def test_send_delete_group(a, expected):
     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))('group', 'GET'))
+    lambda resource, method: combine(resource, method))(src.group, GET))
 def test_send_get_group(a, expected):
     start_assert(a, expected)
 
