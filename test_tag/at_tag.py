@@ -6,8 +6,8 @@ import requests
 import pytest
 from collections import namedtuple
 
-Resource = namedtuple('Resource', ['tag', 'link', 'group'])
-src = Resource('tag', 'link', 'group')
+Resource = namedtuple('Resource', ['tag', 'link', 'group', 'tree', 'ftopt'])
+src = Resource('tag', 'link', 'group', 'tree', 'ftopt')
 POST, PUT, GET, DELETE = 'POST', 'PUT', 'GET', 'DELETE'
 
 
@@ -30,20 +30,20 @@ def load_config():
 
 
 def extract_conf(resource):
-    conf = load_config()
+    config = load_config()
     if resource == src.group:
-        return conf[src.group]
+        return config[src.group]
     elif resource == src.tag:
-        return conf[src.tag]
+        return config[src.tag]
     else:
-        return conf[src.link]
+        return config[src.link]
 
 
 def send_post(resource):
-    resource = extract_conf(resource).get(POST)
-    if resource:
-        url = resource['url']
-        body = resource['body']
+    conf = extract_conf(resource).get(POST)
+    if conf:
+        url = conf['url']
+        body = conf['body']
         for case in body.keys():
             data = json.dumps(body[case])
             res = send_request(POST, url, data)
@@ -51,34 +51,34 @@ def send_post(resource):
 
 
 def send_put(resource):
-    resource = extract_conf(resource).get(PUT)
-    if resource:
-        url = resource('url')
-        body = resource('body')
-        for tc in url:
-            url = url[tc]
-            body = body['tc']
-            for case in body.keys():
-                data = json.dumps(body[case])
+    conf = extract_conf(resource).get(PUT)
+    if conf:
+        urls = conf['url']
+        body = conf['body']
+        for tc in urls:
+            url = urls[tc]
+            datas = body[tc]
+            for case in datas.keys():
+                data = json.dumps(datas[case])
                 res = send_request(PUT, url, data)
                 yield res
 
 
 def send_delete(resource):
-    resource = extract_conf(resource).get(DELETE)
-    if resource:
-        url = resource('url')
-        for case in url.keys():
-            res = send_request(DELETE, url=url[case])
+    conf = extract_conf(resource).get(DELETE)
+    if conf:
+        urls = conf.get('url')
+        for case in urls.keys():
+            res = send_request(DELETE, url=urls[case])
             yield res
 
 
 def send_get(resource):
-    resource = extract_conf(resource).get(GET)
-    if resource:
-        url = resource('url')
-        for case in url.keys():
-            res = send_request(GET, url=url[case])
+    conf = extract_conf(resource).get(GET)
+    if conf:
+        urls = conf.get('url')
+        for case in urls.keys():
+            res = send_request(GET, url=urls[case])
             yield res
 
 
@@ -90,6 +90,15 @@ def combine(resource, method):
     return zip(res, expected_res)
 
 
+def start_assert(a, expected):
+    assert a.status_code == expected[0]
+    text = json.loads(a.text)
+    if "code" in text:
+        assert text['code'] == expected[1]
+    if 'message' in text:
+        assert text['message'] == expected[2]
+
+
 # -----------------------------------------------------
 # test link
 # ----------------------------------------------------
@@ -99,10 +108,10 @@ def test_send_post_link(a, expected):
     start_assert(a, expected)
 
 
-@pytest.mark.parametrize("a, expected", (
-    lambda resource, method: combine(resource, method))(src.link, PUT))
-def test_send_put_link(a, expected):
-    start_assert(a, expected)
+# @pytest.mark.parametrize("a, expected", (
+#     lambda resource, method: combine(resource, method))(src.link, PUT))
+# def test_send_put_link(a, expected):
+#     start_assert(a, expected)
 
 
 @pytest.mark.parametrize("a, expected", (
@@ -171,10 +180,19 @@ def test_send_get_group(a, expected):
     start_assert(a, expected)
 
 
-def start_assert(a, expected):
-    assert a.status_code == expected[0]
-    text = json.loads(a.text)
-    if "code" in text:
-        assert text['code'] == expected[1]
-    if 'message' in text:
-        assert text['message'] == expected[2]
+# -----------------------------------------------------
+# test tagtree
+# -----------------------------------------------------
+@pytest.mark.parametrize("a, expected", (
+    lambda resource, method: combine(resource, method))(src.tree, GET))
+def test_send_get_tree(a, expected):
+    start_assert(a, expected)
+
+
+# -----------------------------------------------------
+# test tag-filter-options
+# -----------------------------------------------------
+@pytest.mark.parametrize("a, expected", (
+    lambda resource, method: combine(resource, method))(src.ftopt, GET))
+def test_send_get_filter_options(a, expected):
+    start_assert(a, expected)
