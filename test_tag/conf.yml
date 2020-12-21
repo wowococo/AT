@@ -5,11 +5,11 @@ link:
   body:
    case1: 
     TagUserModule: dataInput
-    TagUserType: TCP
+    TagUserType: tcp
     TagUserID: 83a2b994-f6b8-11ea-ba49-0291b1811a92
     TagID: 5
     callBackURI: /etl/input/tag
-    getUserURI: /etl/input
+    getUserURI: /etl/input/
    case2: 
     TagUserModule: agentManage
     TagUserType: hostGroup
