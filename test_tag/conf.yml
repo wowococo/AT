@@ -36,7 +36,8 @@ link:
    tc2: http://10.4.68.222/manager/tags/link?tagUserModule=&tagUserType=tcp
   expected_res:
    case1: [200, success]
-   case2: [202, 3761504261, URI不正确]
+   case2: [200, success]
+#    case2: [202, 3761504261, URI不正确]
  DELETE:
   url: 
    tc1: http://10.4.68.222/manager/tags/link?tagUserModule=dataInput&tagUserType=tcp&tagID=1&tagUserID=83a2b994-f6b8-11ea-ba49-0291b1811a92
