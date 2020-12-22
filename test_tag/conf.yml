@@ -59,16 +59,18 @@ tag:
    case7: {name: emma, groupID: 1}
    case8: {name: jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj}
    case9: {name: hhh, groupID: 100}
+   case10: {name: yyy, groupID: FUCK}
   expected_res:
    case1: [200, success]
    case2: [202, 3761504264, 名字含有非法字符]
    case3: [202, 3761504265, ID_NAME_IS_NULL]
    case4: [200]
-   case5: [202, 3761504267, ID_GROUPID_IS_FALSE]   #标签组id为空或者不存在
-   case6: [202, 3761504262, 请求体数据不正确]
-   case7: [202, 3761504257, 名字已经存在]
+   case5: [202, 3761504267, ID_GROUPID_IS_NULL]   #标签组 id 为空
+   case6: [202, 3761504262, ID_BODY_DATA_IS_FALSE]
+   case7: [202, 3761504257, ID_NAME_IS_EXISTS]
    case8: [202, 3761504266, ID_NAME_IS_TOO_LONG]
-   case9: [202, 3761504267, ID_GROUPID_IS_FALSE]  #标签组id为空或者不存在
+   case9: [202, 3761504268, ID_TAGGROUP_IS_NOT_EXISTS]  #标签组 id 不存在
+   case10: [202, 3761504270, ID_GROUPID_IS_NOT_INT]
  PUT:
   url:
    tc1: http://10.4.68.222/manager/tags/tag/0
@@ -92,28 +94,29 @@ tag:
    tc3:
     case1: {name: mary, groupID: 2}
   expected_res:
-   tc1-case1: [202, 3761504258, ID不正确]
+   tc1-case1: [202, 3761504258, ID_ID_IS_FALSE]
    tc2-case1: [200]
    tc2-case2: [200]
-   tc2-case3: [202, 3761504259, 请求体为空]
+   tc2-case3: [202, 3761504259, ID_DATE_IS_NULL]
    tc2-case4: [202, 3761504265, ID_NAME_IS_NULL]
-   tc2-case5: [202, 3761504257, 名字已经存在]
-   tc2-case6: [202, 3761504257, 名字已经存在]
-   tc2-case7: [202, 3761504264, 名字含有非法字符]
-   tc2-case8: [202, 3761504262, 请求体数据不正确]
+   tc2-case5: [202, 3761504257, ID_NAME_IS_EXISTS]
+   tc2-case6: [202, 3761504257, ID_NAME_IS_EXISTS]
+   tc2-case7: [202, 3761504264, ID_NAME_IS_INVALID]
+   tc2-case8: [202, 3761504262, ID_BODY_DATA_IS_FALSE]
    tc2-case9: [202, 3761504266, ID_NAME_IS_TOO_LONG]
-   tc2-case10: [202, 3761504267, ID_GROUPID_IS_FALSE]
-   tc2-case11: [202, 3761504267, ID_GROUPID_IS_FALSE]
-   tc3-case1: [202, ]   # 待确认
+   tc2-case10: [202, 3761504270, ID_GROUPID_IS_NOT_INT]
+   tc2-case11: [202, 3761504268, ID_TAGGROUP_IS_NOT_EXISTS]
+   tc3-case1: [200, ]   # 返回 success 为 0
  DELETE:
   url: 
    tc1: http://10.4.68.222/manager/tags/tag/0
    tc2: http://10.4.68.222/manager/tags/tag/1
    tc3: http://10.4.68.222/manager/tags/tag/100
   expected_res:
-   tc1: [202, 3761504258, ID不正确]
+   tc1: [202, 3761504258, ID_ID_IS_FALSE]
    tc2: [200]
-   tc3: [202, 3761504258, ID不正确]
+  #  tc3: [202, 3761504258, ID_ID_IS_FALSE]
+  tc3: [200]  # 当删除或者修改一个不存在的 id 的时候，返回 success 为 0
  GET:
   url: 
    tc1: http://10.4.68.222/manager/tags/tag/3
@@ -154,12 +157,12 @@ tag:
    tc4: [200, success]
    tc5: [200]
    tc6: [200, success]
-   tc7: [202, ]
-   tc8: [202, ]  # page不生效
-   tc9: [202, ID_PAGE_SIZE_IS_NOT_INT]
-   tc10: [202, ]
-   tc11: [202,  ]  # by不生效
-   tc12: [202, ID_METHOD_BY_IS_FALSE]
+   tc7: [202, 3761504271, ID_PAGE_SIZE_IS_NULL]
+   tc8: [200, ]  # page不生效
+   tc9: [202, 3761504272, ID_PAGE_SIZE_IS_NOT_INT]
+   tc10: [202, 3761504273, ID_ORDER_BY_IS_NULL]
+   tc11: [200,  ]  # by不生效
+   tc12: [202, 3761504260, ID_METHOD_BY_IS_FALSE]
    tc13: [202, 3761504267, ID_GROUPID_IS_FALSE]    # 标签组id为空或者不存在或者包含特殊字符
    tc14: [202, 3761504267, ID_GROUPID_IS_FALSE]
    tc15: [202, ]
